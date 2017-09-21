@@ -320,4 +320,4 @@ BLDateTime.GetNextReminderWorkDay(Reminder) which gives the next workday date of
  Now, if it's currently 5:00 am, and you create a weekly reminder with multiple days and one of those days is today AND the selected time is AFTER 5:00 am, it will set the date to today, as it should be.
 
  Fixed an issue with postponing reminders where it wouldn't postpone, because the postpone date got set to null in the form_closing event.
- The form_closing event tries to save the reminder if the reminder closed unexpectidly. It now checks if the reminder clossed correctly(using the OK button), if it did, it won't do anything
+ The form_closing event tries to save the reminder if the reminder closed unexpectidly. It now checks if the reminder clossed correctly(using the OK button), if it did, it won't do anything 
