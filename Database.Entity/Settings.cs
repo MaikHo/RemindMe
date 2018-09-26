@@ -19,5 +19,11 @@ namespace Database.Entity
         public long AlwaysOnTop { get; set; }
         public long StickyForm { get; set; }
         public long EnableReminderCountPopup { get; set; }
+        public long EnableHourBeforeReminder { get; set; }
+        public Nullable<long> HideReminderConfirmation { get; set; }
+        public long EnableQuickTimer { get; set; }
+        public string LastVersion { get; set; }
+        public string DefaultTimerSound { get; set; }
+        public Nullable<long> EnableAdvancedReminders { get; set; }
     }
 }

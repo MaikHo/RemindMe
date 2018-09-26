@@ -25,6 +25,10 @@ namespace Database.Entity
         public string RepeatDays { get; set; }
         public string SoundFilePath { get; set; }
         public string PostponeDate { get; set; }
+        public long Deleted { get; set; }
         public Nullable<long> DayOfMonth { get; set; }
+        public Nullable<long> Hide { get; set; }
+        public Nullable<long> Corrupted { get; set; }
+        public long EnableAdvancedReminder { get; set; }
     }
 }

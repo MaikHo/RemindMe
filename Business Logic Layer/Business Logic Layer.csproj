@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,9 +33,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EmailSender">
+      <HintPath>..\..\..\Downloads\test\EmailSender.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -43,27 +49,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BLAVRProperties.cs" />
     <Compile Include="BLDatabase.cs" />
     <Compile Include="BLDateTime.cs" />
+    <Compile Include="BLEmail.cs" />
     <Compile Include="BLFormLogic.cs" />
+    <Compile Include="BLHotkeys.cs" />
     <Compile Include="BLIO.cs" />
+    <Compile Include="BLListviewColumnSizes.cs" />
     <Compile Include="BLPopupDimensions.cs" />
     <Compile Include="BLReminder.cs" />
     <Compile Include="BLSettings.cs" />
     <Compile Include="BLSongs.cs" />
     <Compile Include="IOVariables.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReminderException.cs" />
     <Compile Include="ReminderRepeatType.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Data Access Layer\Data Access Layer.csproj">
-      <Project>{bdb579df-ef91-4ce3-a7bd-40da7d0b78c6}</Project>
-      <Name>Data Access Layer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Database.Entity\Database.Entity.csproj">
-      <Project>{3dea148e-231d-4047-838e-c891af212a00}</Project>
-      <Name>Database.Entity</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="WMPLib">
@@ -75,6 +76,19 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Data Access Layer\Data Access Layer.csproj">
+      <Project>{bdb579df-ef91-4ce3-a7bd-40da7d0b78c6}</Project>
+      <Name>Data Access Layer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Database.Entity\Database.Entity.csproj">
+      <Project>{b15cf13c-05db-4346-adb0-704b0756c1e9}</Project>
+      <Name>Database.Entity</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

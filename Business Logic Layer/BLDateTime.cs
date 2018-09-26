@@ -1,17 +1,18 @@
 ﻿using Database.Entity;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-
+using System.Threading;
 
 namespace Business_Logic_Layer
 {
     /// <summary>
-    /// This class has usefull methods regarding datetime.
+    /// This class has usefull methods regarding dates and times.
     /// </summary>
-    public abstract class BLDateTime
-    {  
-
+    public class BLDateTime
+    {
+        private BLDateTime() { }
         /// <summary>
         /// Gets the date of the next day of the week. The time will be 00:00:00
         /// </summary>
@@ -24,8 +25,32 @@ namespace Business_Logic_Layer
             if (day != DateTime.Now.DayOfWeek)
                 return Convert.ToDateTime(DateTime.Now.AddDays(daysToAdd).ToShortDateString() + " 00:00:00");
             else                            
-                return Convert.ToDateTime(DateTime.Now.AddDays(7).ToShortDateString() + " 00:00:00");            
+                return Convert.ToDateTime(DateTime.Now.AddDays(7).ToShortDateString() + " 00:00:00");   
+                                 
         }
+
+        /// <summary>
+        /// Converts a string of date of any date-time-format into a string of time of the current machine's date-time-format        
+        /// </summary>
+        /// <param name="Date">The string containing a date in a valid format</param>
+        /// <returns></returns>
+        public static string ConvertDateTimeStringToCurrentCulture(string date,string languageCode)
+        {
+            //Same language code? just return the same date. No converting needed
+            if (CultureInfo.CurrentCulture.IetfLanguageTag == languageCode)
+                return date;
+
+            //The date format of the exported reminders in the .remindme file(for example, "nl-NL")
+            DateTimeFormatInfo remindMeFileFormat = new CultureInfo(languageCode, false).DateTimeFormat;
+            //the date format of the system running RemindMe(for example, "en-US")
+            DateTimeFormatInfo currentSystemFormat = new CultureInfo(CultureInfo.CurrentCulture.IetfLanguageTag, false).DateTimeFormat;
+
+
+            //Parse it into the correct format,
+            //Convert.ToDateTime(The date, the date format of that date).ToString(the date format of the system running RemindMe)
+            return Convert.ToDateTime(date, remindMeFileFormat).ToString(currentSystemFormat.ShortDatePattern + " " + currentSystemFormat.ShortTimePattern);                      
+        }
+
 
         /// <summary>
         /// Gets the day of the week in DayOfWeek
@@ -47,6 +72,24 @@ namespace Business_Logic_Layer
                     case 6: return DayOfWeek.Saturday;                    
                 }
             }
+
+            return DateTime.Now.DayOfWeek;
+        }
+
+        public static DayOfWeek GetDayOfWeekFromString(string day)
+        {
+
+            switch (day.ToLower())
+            {
+                case "sunday": return DayOfWeek.Sunday;
+                case "monday": return DayOfWeek.Monday;
+                case "tuesday": return DayOfWeek.Tuesday;
+                case "wednesday": return DayOfWeek.Wednesday;
+                case "thursday": return DayOfWeek.Thursday;
+                case "friday": return DayOfWeek.Friday;
+                case "saturday": return DayOfWeek.Saturday;
+            }
+            
 
             return DateTime.Now.DayOfWeek;
         }
@@ -191,6 +234,85 @@ namespace Business_Logic_Layer
                         return new DateTime(DateTime.Now.Year, DateTime.Now.Month, day);
                     else
                         return new DateTime(DateTime.Now.Year, DateTime.Now.Month, day).AddMonths(1);
+                }
+
+            }
+            else
+                return new DateTime();
+        }
+
+        public static int GetAmountOfDaysBetween(DayOfWeek day1, DayOfWeek day2)
+        {
+           return (7 + (day2 - day1)) % 7;
+        }
+
+        /// <summary>
+        /// Sorts a list containing unique week days, for example wednesday,monday,sunday into monday,wednesday,sunday.
+        /// </summary>
+        /// <param name="List"></param>
+        /// <returns></returns>
+        public static List<string> SortDayOfWeekStringList(List<string> List)
+        {
+            List<string> returnList = new List<string>();
+            List = List.ConvertAll(d => d.ToLower());
+
+            if (List.Contains("monday"))
+                returnList.Add("monday");
+
+            if (List.Contains("tuesday"))
+                returnList.Add("tuesday");
+
+            if (List.Contains("wednesday"))
+                returnList.Add("wednesday");
+
+            if (List.Contains("thursday"))
+                returnList.Add("thursday");
+
+            if (List.Contains("friday"))
+                returnList.Add("friday");
+
+            if (List.Contains("saturday"))
+                returnList.Add("saturday");
+
+            if (List.Contains("sunday"))
+                returnList.Add("sunday");
+
+            
+            return returnList;
+        }
+
+        public static DateTime GetDateForNextDayOfMonth(int day, DateTime givenTime)
+        {
+            if (day > 0 && day <= 31)
+            {
+                int month = DateTime.Now.Month;
+
+                int amountOfDaysThisMonth = DateTime.DaysInMonth(DateTime.Now.Year, month);
+                if (day > amountOfDaysThisMonth)
+                {
+                    while (day > amountOfDaysThisMonth) //continue until we have found a month that has the appropriate amount of days
+                    {
+                        month++;
+                        amountOfDaysThisMonth = DateTime.DaysInMonth(DateTime.Now.Year, month);
+                    }
+
+                    if (month >= 1 && month <= 12)
+                        return new DateTime(DateTime.Now.Year, month, day);
+                    else
+                        return new DateTime();
+
+                }
+                else
+                {
+                    
+                    if (day > DateTime.Now.Day)
+                        return new DateTime(DateTime.Now.Year, DateTime.Now.Month, day, givenTime.Hour, givenTime.Minute, givenTime.Second);
+
+                    //If the day is the same, check for the time. If the time is in the future, do not add one month to the date!
+                    else if (day == DateTime.Now.Day && Convert.ToDateTime("10-10-2010 " + givenTime.ToShortTimeString()) > Convert.ToDateTime("10-10-2010 " + DateTime.Now.ToShortTimeString()))
+                        return new DateTime(DateTime.Now.Year, DateTime.Now.Month, day, givenTime.Hour, givenTime.Minute, givenTime.Second);
+                    else
+                        return new DateTime(DateTime.Now.Year, DateTime.Now.Month, day, givenTime.Hour, givenTime.Minute, givenTime.Second).AddMonths(1);
                 }
 
             }

@@ -1,20 +1,18 @@
 ﻿using Database.Entity;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Data_Access_Layer;
 using WMPLib;
+using System.Drawing;
 
 
 namespace Business_Logic_Layer
 {
-    public abstract class BLFormLogic
+    public class BLFormLogic
     {
+        private BLFormLogic() { }
         private static WindowsMediaPlayer myPlayer = new WindowsMediaPlayer();
         /// <summary>
         /// Removes borders from buttons to make them look better with a background
@@ -27,12 +25,6 @@ namespace Business_Logic_Layer
             b.FlatAppearance.BorderSize = 0;
         }
 
-        
-
-
-
-
-
 
 
         /// <summary>
@@ -42,9 +34,17 @@ namespace Business_Logic_Layer
         /// <param name="rem">The reminder</param>
         public static void AddReminderToListview(ListView lv, Reminder rem)
         {
-            
+            if (!BLReminder.IsValidReminder(rem))
+            {
+                //This reminder isn't valid! Set the "Corrupted" tag to 1 and throw exception
+                rem.Corrupted = 1;
+                BLReminder.EditReminder(rem);
+                throw new ReminderException("Corrupted/damaged reminder: " + rem.Name + " \r\nIt has been removed from your list of reminders", rem);
+            }
+
             ListViewItem itm = new ListViewItem(rem.Name);
             itm.Tag = rem.Id; //Add the id as a tag(invisible)
+
 
             if (rem.PostponeDate == null)
             {
@@ -63,17 +63,17 @@ namespace Business_Logic_Layer
 
             if (rem.EveryXCustom == null)
             {
-                
-                if(rem.RepeatType == ReminderRepeatType.MULTIPLE_DAYS.ToString())
+
+                if (rem.RepeatType == ReminderRepeatType.MULTIPLE_DAYS.ToString())
                 {
                     string cutOffString = "";
-                    foreach(string day in rem.RepeatDays.Split(','))                   
+                    foreach (string day in rem.RepeatDays.Split(','))
                         cutOffString += day.Substring(0, 3) + ",";
 
                     cutOffString = cutOffString.Remove(cutOffString.Length - 1, 1); //remove the final ','
                     itm.SubItems.Add(cutOffString); //Add all the repeating days to the listview column. example: mon,tue,sat
                 }
-                else if(rem.RepeatType == ReminderRepeatType.MONTHLY.ToString())
+                else if (rem.RepeatType == ReminderRepeatType.MONTHLY.ToString())
                 {
                     string multipleDays = "";
                     foreach (string date in rem.Date.Split(','))
@@ -89,12 +89,19 @@ namespace Business_Logic_Layer
                 itm.SubItems.Add("every " + rem.EveryXCustom + " " + rem.RepeatType);
 
             if (rem.Enabled == 1)
+            {
                 itm.SubItems.Add("True");
+                itm.ForeColor = Color.White;
+            }
             else
+            {
                 itm.SubItems.Add("False");
+                itm.ForeColor = Color.FromArgb(64, 64, 64);
+            }
 
             lv.Items.Add(itm);
         }
+       
         /// <summary>
         /// Adds multiple reminders to the listview
         /// </summary>
@@ -102,15 +109,38 @@ namespace Business_Logic_Layer
         /// <param name="rem">The list of reminders</param>
         public static void AddRemindersToListview(ListView lv, List<Reminder> reminderList)
         {
+            List<Reminder> disabledReminders = new List<Reminder>(); //We're going to add the disabled reminders after all the enabled ones.  
+            
+            //First, lets check if this list is correct
+            foreach(Reminder checkRem in reminderList)
+            {
+                if (!BLReminder.IsValidReminder(checkRem))
+                {
+                    //This reminder isn't valid! Set the "Corrupted" tag to 1 and throw exception
+                    checkRem.Corrupted = 1;
+                    BLReminder.EditReminder(checkRem);
+                    throw new ReminderException("Corrupted/damaged reminder: " + checkRem.Name + " \r\nIt has been removed from your list of reminders", checkRem);
+                }
+            }
+                      
             List<Reminder> list = reminderList.OrderBy(t => Convert.ToDateTime(t.Date.Split(',')[0])).ToList();
-            foreach (Reminder rem in list)            
-                AddReminderToListview(lv, rem);            
+            foreach (Reminder rem in list)
+            {                
+                if (rem.Enabled == 1) //not disabled? add to listview
+                    AddReminderToListview(lv, rem);
+                else
+                    disabledReminders.Add(rem);
+            }
+
+            //Add disabled reminders to the bottom of the list
+            foreach (Reminder rem in disabledReminders)
+                AddReminderToListview(lv, rem);
         }
 
         public static void RefreshListview(ListView lv)
-        {
+        {            
             lv.Items.Clear();
-            AddRemindersToListview(lv, DLReminders.GetReminders());
+            AddRemindersToListview(lv, DLReminders.GetReminders().Where(rem => rem.Hide == 0).ToList());
         }
 
        
